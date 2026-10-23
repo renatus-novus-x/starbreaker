@@ -6,10 +6,6 @@
 
 **[Launch STAR BREAKER in WebX68k](https://uraraworks.github.io/WebX68k/?cpu=10&fd1=https://raw.githubusercontent.com/renatus-novus-x/starbreaker/main/dist/starbreaker.xdf&run=1)**
 
-Note: while this repository is private, the launch link above cannot
-load the disk image (it needs authentication). It becomes usable once
-the repository is switched to public.
-
 An original brick-breaking game for the Sharp X68000, written in C++
 with the elf2x68k cross toolchain (m68k-xelf-gcc/g++). It boots
 standalone — **no Human68k required**: the game itself is the system
@@ -66,8 +62,7 @@ that script is not part of this repository.)
 - Emulator: load `dist/starbreaker.xdf` (2HD, 1,261,568 bytes) as
   FDD0 and boot. In [WebX68k](https://uraraworks.github.io/WebX68k/),
   insert the image and use the "boot with the inserted disk" button,
-  or use the launch link at the top of this page (public repository
-  only).
+  or use the launch link at the top of this page.
 - Real hardware: write the image to a 2HD floppy and boot from it.
 
 ## Files

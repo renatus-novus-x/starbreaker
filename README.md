@@ -6,10 +6,6 @@
 
 **[Launch STAR BREAKER in WebX68k](https://uraraworks.github.io/WebX68k/?cpu=10&fd1=https://raw.githubusercontent.com/renatus-novus-x/starbreaker/main/dist/starbreaker.xdf&run=1)**
 
-※ このリポジトリが Private の間は、上のリンクからは起動できません
-（ディスクイメージの読み込みに認証が必要なため）。Public に切り替えた
-時点で有効になります。
-
 elf2x68k (m68k-xelf-gcc/g++ 13.5.0) で作った X68000 用ブロック崩し
 『STAR BREAKER』です。
 **Human68k なしで動きます。** 本体はブート可能なシステムファイル

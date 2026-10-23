@@ -803,7 +803,7 @@ private:
     joy_raw_ = joy & 0xff;
     bool jleft = !(joy & 0x04);
     bool jright = !(joy & 0x08);
-    bool jbtn = !(joy & 0x30);
+    bool jbtn = (joy & 0x30) != 0x30;  /* either trigger (bits 4/5, active low) */
     in.btn_edge = jbtn && !joy_btn_prev_;
     joy_btn_prev_ = jbtn;
     if (jleft) in.dir = -1;
