@@ -1,0 +1,6 @@
+*.o
+*.elf*
+breakout.sys
+breakout.x
+breakout-x.xdf
+__pycache__/
