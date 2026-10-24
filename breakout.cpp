@@ -372,6 +372,31 @@ static void draw_background() {
   draw_stars_in(0, 0, SCR_W - 1, SCR_H - 1);
 }
 
+/* Draw 8x8-font text at scale 1 by writing glyph pixels straight to
+   GVRAM, merging horizontal runs into single row writes.  Far cheaper
+   than Gfx::text (one _iocs_fill call per pixel); used for the serve
+   hint, which is redrawn on blink transitions only. */
+static void draw_text_gvram(int x, int y, uint16_t color, const char *s) {
+  for (int i = 0; s[i]; i++) {
+    const uint8_t *g = glyph_for(s[i]);
+    for (int row = 0; row < 8; row++) {
+      uint8_t bits = g[row];
+      int col = 0;
+      while (col < 8) {
+        if (!(bits & (0x80 >> col))) { col++; continue; }
+        int c0 = col;
+        while (col < 8 && (bits & (0x80 >> col))) col++;
+        gvram_fill_row(x + c0, x + col - 1, y + row, color);
+      }
+    }
+    x += 8;
+  }
+}
+
+static void draw_text_gvram_center(int y, uint16_t color, const char *s) {
+  draw_text_gvram((SCR_W - (int)strlen(s) * 8) / 2, y, color, s);
+}
+
 /* ------------------------------------------------------------------ */
 /* pre-rendered title logo (B5 Orbital Mark)                           */
 /* ------------------------------------------------------------------ */
@@ -3052,6 +3077,7 @@ private:
   int demo_serve_wait_ = 0;
   int demo_over_t_ = 0;
   bool press_visible_ = true;
+  bool serve_hint_vis_ = false;   /* launch hint currently on screen */
 
   /* ---------------- timing ---------------- */
   /* One game frame per display refresh. The wait returns at the start
@@ -3364,6 +3390,7 @@ private:
 
   void draw_all_play() {
     draw_background();
+    serve_hint_vis_ = false;   /* full redraw erases the serve hint */
     draw_frame();
     draw_blocks();
     hud_setup();
@@ -3561,6 +3588,10 @@ private:
   }
 
   void launch_ball() {
+    if (serve_hint_vis_) {   /* never leave the hint on the play field */
+      serve_hint_vis_ = false;
+      restore_bg(140, 396, 372, 408);
+    }
     int pm = speed_permille();
     int dir = (key_dir_ != 0) ? key_dir_ : 1;
     ball_vx_ = (640 * dir) * pm / 1000;
@@ -3767,11 +3798,18 @@ private:
         ball_fx_ = (paddle_x_ + PADDLE_W / 2) << FP;
         ball_fy_ = (PADDLE_Y - BALL_R - 1) << FP;
         draw_play_entities();
-        if ((frame_ % 84) < 55) {
-          Gfx::text_center(398, 1, GRB(20, 26, 30),
-                           "SPACE / PAD BTN : LAUNCH");
-        } else if ((frame_ % 84) == 55) {
-          restore_bg(140, 396, 372, 408);
+        /* Blink the launch hint by drawing/erasing only on phase
+           transitions.  Redrawing it every frame (344 _iocs_fill
+           calls) once cost 33-53 ms per visible frame and dropped
+           Serve to 19-26 fps; see probe/servebench. */
+        bool hint_vis = (frame_ % 84) < 55;
+        if (hint_vis != serve_hint_vis_) {
+          serve_hint_vis_ = hint_vis;
+          if (hint_vis)
+            draw_text_gvram_center(398, GRB(20, 26, 30),
+                                   "SPACE / PAD BTN : LAUNCH");
+          else
+            restore_bg(140, 396, 372, 408);
         }
         if (in.launch) launch_ball();
         break;
